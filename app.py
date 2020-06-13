@@ -3,10 +3,8 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_restful import Api
 from extensions import db
-from models.user import User
+from resources.user import UserListResource
 from resources.recipe import RecipeListResource, RecipeResource, RecipePublishResource
-
-# from flask_script import Manager
 
 
 def create_app():
@@ -22,12 +20,11 @@ def create_app():
 def register_extensions(app):
     db.init_app(app)
     migrate = Migrate(app, db)
-    # manager = Manager(app)
-    # manager.add_command("db", MigrateCommand)
 
 
 def register_resources(app):
     api = Api(app)
+    api.add_resource(UserListResource, "/users")
     api.add_resource(RecipeListResource, "/recipes")
     api.add_resource(RecipeResource, "/recipes/<int:recipe_id>")
     api.add_resource(RecipePublishResource, "/recipes/<int:recipe_id>/publish")
