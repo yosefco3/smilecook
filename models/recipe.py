@@ -2,7 +2,6 @@ from app import db
 
 
 class Recipe(db.Model):
-    recipe_list = []
     __tablename__ = "recipe"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
@@ -20,10 +19,29 @@ class Recipe(db.Model):
     )
     user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
 
+    def data(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "num_of_servings": self.num_of_servings,
+            "cook_time": self.cook_time,
+            "directions": self.directions,
+            "user_id": self.user_id,
+        }
+
     @classmethod
-    def get_last_id(cls):
-        if cls.recipe_list:
-            last_recipe = cls.recipe_list[-1]
-        else:
-            return 1
-        return last_recipe.id + 1
+    def get_all_published(cls):
+        return cls.query.filter_by(is_publish=True).all()
+
+    @classmethod
+    def get_by_id(cls, recipe_id):
+        return cls.query.get_or_404(recipe_id)
+
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
