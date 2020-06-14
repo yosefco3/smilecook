@@ -13,22 +13,11 @@ class Recipe(db.Model):
     created_at = db.Column(db.DateTime(), nullable=False, server_default=db.func.now())
     updated_at = db.Column(
         db.DateTime(),
-        nullable=False,
         server_default=db.func.now(),
         onupdate=db.func.now(),
+        nullable=False,
     )
     user_id = db.Column(db.Integer(), db.ForeignKey("user.id"))
-
-    def data(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "num_of_servings": self.num_of_servings,
-            "cook_time": self.cook_time,
-            "directions": self.directions,
-            "user_id": self.user_id,
-        }
 
     @classmethod
     def get_all_published(cls):

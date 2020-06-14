@@ -15,6 +15,7 @@ psycopg2-binary = "*"
 passlib = "*"
 flask-sqlalchemy = "*"
 flask-jwt-extended = "*"
+marshmallow = "*"
 
 [requires]
 python_version = "3.8"
