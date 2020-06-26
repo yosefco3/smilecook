@@ -26,6 +26,11 @@ class TokenResource(Resource):
                 {"message": "email or password are incorrect"},
                 HTTPStatus.UNAUTHORIZED,
             )
+        if user.is_active is False:
+            return (
+                {"message": "The user account is not activated yet"},
+                HTTPStatus.FORBIDDEN,
+            )
         access_token = create_access_token(identity=user.id, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
         return (
@@ -48,4 +53,3 @@ class RevokeResource(Resource):
         jti = get_raw_jwt()["jti"]
         black_list.add(jti)
         return {"message": "Successfully logged out"}, HTTPStatus.OK
-

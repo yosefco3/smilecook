@@ -3,16 +3,23 @@ from flask_restful import Resource
 from http import HTTPStatus
 from models.recipe import Recipe
 from flask_jwt_extended import get_jwt_identity, jwt_required, jwt_optional
-from schemas.recipe import RecipeSchema
+import os
+from utils import save_image, allowed_file
+from schemas.recipe import RecipeSchema, RecipePaginationSchema
+
 
 recipe_schema = RecipeSchema()
 recipe_list_schema = RecipeSchema(many=True)
+recipe_cover_schema = RecipeSchema(only=("cover_url",))
+recipe_pagination_schema = RecipePaginationSchema()
 
 
 class RecipeListResource(Resource):
     def get(self):
-        recipes = Recipe.get_all_published()
-        return recipe_list_schema.dump(recipes), HTTPStatus.OK
+        per_page = int(request.args.get("per_page", 10))
+        page = int(request.args.get("page", 1))
+        paginated_recipes = Recipe.get_all_published(page, per_page)
+        return recipe_pagination_schema.dump(paginated_recipes), HTTPStatus.OK
 
     @jwt_required
     def post(self):
@@ -40,7 +47,7 @@ class RecipeResource(Resource):
         current_user = get_jwt_identity()
         if recipe.is_publish == False and current_user != recipe.user_id:
             return {"message": "access not allowed"}, HTTPStatus.FORBIDDEN
-        return recipe.data(), HTTPStatus.OK
+        return recipe_schema.dump(recipe), HTTPStatus.OK
 
     @jwt_required
     def patch(self, recipe_id):
@@ -95,3 +102,33 @@ class RecipePublishResource(Resource):
         recipe.is_publish = False
         recipe.save()
         return {"message": "recipe will not published"}, HTTPStatus.OK
+
+
+class RecipeCoverUploadResource(Resource):
+    @jwt_required
+    def put(self, recipe_id):
+        # print(request.files)
+        file = request.files.get("cover")
+        if not file:
+            return {"message": "Not a valid image"}, HTTPStatus.BAD_REQUEST
+        if not allowed_file(file.filename):
+            return {"message": "File type not allowed."}, HTTPStatus.BAD_REQUEST
+        recipe = Recipe.get_by_id(recipe_id=recipe_id)
+        if recipe is None:
+            return {"message": "Recipe not found"}, HTTPStatus.NOT_FOUND
+        current_user = get_jwt_identity()
+        if current_user != recipe.user_id:
+            return {"message": "Access is not allowed"}, HTTPStatus.FORBIDDEN
+
+        if recipe.cover_image:
+            cover_path = os.path.join(
+                os.environ.get("UPLOAD_RECIPES_FOLDER"), recipe.cover_image
+            )
+
+            if os.path.exists(cover_path):
+                os.remove(cover_path)
+        filename = save_image(image=file, folder="recipes")
+        recipe.cover_image = filename
+        recipe.save()
+        return recipe_cover_schema.dump(recipe), HTTPStatus.OK
+

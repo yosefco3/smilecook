@@ -1,1 +1,5 @@
 .env
+.vscode
+__pycache__
+migrationssendgrid.env
+config.py
