@@ -21,6 +21,7 @@ flask-mail = "*"
 pillow = "*"
 flask-caching = "~=1.7"
 flask-limiter = "*"
+gunicorn = "~=19.9"
 
 [requires]
 python_version = "3.8"
