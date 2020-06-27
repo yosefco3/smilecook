@@ -36,12 +36,6 @@ class RecipeSchema(Schema):
         if value < 1 or value > 300:
             raise ValidationError("Cook time must be between 1 to 300 min.")
 
-    # @post_dump(pass_many=True)
-    # def wrap(self, data, many, **kwargs):
-    #     if many:
-    #         return {"data": data}
-    #     return data
-
     @validates("name")
     def recipe_exists(self, name):
         if Recipe.query.filter(Recipe.name == name).first() is not None:
