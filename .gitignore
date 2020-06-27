@@ -3,4 +3,5 @@
 __pycache__
 static/images/avatars/*
 static/images/recipes/*
+.flaskenv
 

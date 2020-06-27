@@ -11,7 +11,7 @@ class Config:
     UPLOAD_AVATARS_FOLDER = "static/images/avatars"
     UPLOAD_RECIPES_FOLDER = "static/images/recipes"
     # smtp server configuration
-    MAIL_SERVER = os.environ.get(MAIL_SERVER)
+    MAIL_SERVER = "smtp.sendgrid.net"
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = "apikey"
