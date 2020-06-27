@@ -25,11 +25,11 @@ def create_app():
     # configurations(app)
     env = os.environ.get("ENV", "Development")
     if env == "Production":
-        config_str = "Config.ProductionConfig"
+        config_str = "config.ProductionConfig"
     elif env == "Staging":
-        config_str = "Config.StagingConfig"
+        config_str = "config.StagingConfig"
     else:
-        config_str = "Config.DevelopmentConfig"
+        config_str = "config.DevelopmentConfig"
     app = Flask(__name__)
     app.config.from_object(config_str)
     register_extensions(app)
