@@ -8,7 +8,7 @@ from utils import hash_password
 from flask_jwt_extended import jwt_optional, get_jwt_identity, jwt_required
 from schemas.user import UserSchema
 from utils import generate_token, verify_token, allowed_file, save_image, clear_cache
-from extensions import mail
+from extensions import mail, limiter
 from mail import send_email
 from schemas.recipe import RecipeSchema, RecipePaginationSchema
 
@@ -110,6 +110,14 @@ class UserAvatarUploadResource(Resource):
 
 
 class UserRecipeListResource(Resource):
+    decorators = [
+        limiter.limit(
+            "3/minute;30/hour;300/day",
+            methods=["GET"],
+            error_message="Too many requests",
+        )
+    ]
+
     @jwt_optional
     def get(self, username):
         page = int(request.args.get("page", 1))

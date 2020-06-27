@@ -6,7 +6,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required, jwt_optional
 import os
 from utils import save_image, allowed_file, clear_cache
 from schemas.recipe import RecipeSchema, RecipePaginationSchema
-from extensions import cache
+from extensions import cache, limiter
 
 
 recipe_schema = RecipeSchema()
@@ -16,6 +16,12 @@ recipe_pagination_schema = RecipePaginationSchema()
 
 
 class RecipeListResource(Resource):
+    decorators = [
+        limiter.limit(
+            "3 per minute", methods=["GET"], error_message="Too many requests"
+        )
+    ]
+
     @cache.cached(timeout=60, query_string=True)
     def get(self):
         sort = request.args.get("sort", "created_at")
