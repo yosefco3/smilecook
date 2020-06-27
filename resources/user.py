@@ -7,7 +7,7 @@ from models.recipe import Recipe
 from utils import hash_password
 from flask_jwt_extended import jwt_optional, get_jwt_identity, jwt_required
 from schemas.user import UserSchema
-from utils import generate_token, verify_token, allowed_file, save_image
+from utils import generate_token, verify_token, allowed_file, save_image, clear_cache
 from extensions import mail
 from mail import send_email
 from schemas.recipe import RecipeSchema, RecipePaginationSchema
@@ -105,6 +105,7 @@ class UserAvatarUploadResource(Resource):
         filename = save_image(image=file, folder="avatars")
         user.avatar_image = filename
         user.save()
+        clear_cache("/recipes")
         return user_avatar_schema.dump(user), HTTPStatus.OK
 
 

@@ -4,8 +4,9 @@ from http import HTTPStatus
 from models.recipe import Recipe
 from flask_jwt_extended import get_jwt_identity, jwt_required, jwt_optional
 import os
-from utils import save_image, allowed_file
+from utils import save_image, allowed_file, clear_cache
 from schemas.recipe import RecipeSchema, RecipePaginationSchema
+from extensions import cache
 
 
 recipe_schema = RecipeSchema()
@@ -15,6 +16,7 @@ recipe_pagination_schema = RecipePaginationSchema()
 
 
 class RecipeListResource(Resource):
+    @cache.cached(timeout=60, query_string=True)
     def get(self):
         sort = request.args.get("sort", "created_at")
         order = request.args.get("order", "desc")
@@ -79,6 +81,7 @@ class RecipeResource(Resource):
             setattr(recipe, key, value)
 
         recipe.save()
+        clear_cache("/recipes")
         return recipe_schema.dump(recipe), HTTPStatus.OK
 
     @jwt_required
@@ -90,6 +93,7 @@ class RecipeResource(Resource):
         if current_user != recipe.user_id:
             return {"message": "access not allowed"}, HTTPStatus.FORBIDDEN
         recipe.delete()
+        clear_cache("/recipes")
         return {"recipe deleted": recipe.id}, HTTPStatus.OK
 
 
@@ -101,6 +105,7 @@ class RecipePublishResource(Resource):
             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
         recipe.is_publish = True
         recipe.save()
+        clear_cache("/recipes")
         return {"message": "recipe published"}, HTTPStatus.OK
 
     @jwt_required
@@ -110,6 +115,7 @@ class RecipePublishResource(Resource):
             return {"message": "recipe not found"}, HTTPStatus.NOT_FOUND
         recipe.is_publish = False
         recipe.save()
+        clear_cache("/recipes")
         return {"message": "recipe will not published"}, HTTPStatus.OK
 
 
@@ -139,5 +145,6 @@ class RecipeCoverUploadResource(Resource):
         filename = save_image(image=file, folder="recipes")
         recipe.cover_image = filename
         recipe.save()
+        clear_cache("/recipes")
         return recipe_cover_schema.dump(recipe), HTTPStatus.OK
 

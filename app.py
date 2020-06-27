@@ -2,7 +2,7 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from flask_restful import Api
-from extensions import db, jwt, mail
+from extensions import db, jwt, mail, cache
 from resources.user import (
     UserListResource,
     UserResource,
@@ -44,8 +44,10 @@ def configurations(app):
     app.config["MAIL_PASSWORD"] = os.environ.get("SENDGRID_API_KEY")
     app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER")
     # upload files config
-    app.config["UPLOAD_FOLDER"] = "static/images"
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+    # caching:
+    app.config["CACHE_TYPE"] = "simple"
+    app.config["CACHE_DEFAULT_TIMEOUT"] = 10 * 60
 
 
 def register_extensions(app):
@@ -53,6 +55,20 @@ def register_extensions(app):
     migrate = Migrate(app, db)
     jwt.init_app(app)
     mail.init_app(app)
+    cache.init_app(app)
+
+    # @app.before_request
+    # def before_request():
+    #     print("\n=================================== before request ===============\n")
+    #     print(cache.cache._cache.keys())
+    #     print("\n==================================================================\n")
+
+    # @app.after_request
+    # def after_request(response):
+    #     print("\n=================================== after request ===============\n")
+    #     print(cache.cache._cache.keys())
+    #     print("\n==================================================================\n")
+    #     return response
 
     @jwt.token_in_blacklist_loader
     def check_if_token_in_blacklist(decrepted_token):

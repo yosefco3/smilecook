@@ -19,7 +19,7 @@ marshmallow = "*"
 itsdangerous = "~=1.1"
 flask-mail = "*"
 pillow = "*"
-webargs = "~=5.4"
+flask-caching = "~=1.7"
 
 [requires]
 python_version = "3.8"
