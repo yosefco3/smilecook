@@ -16,9 +16,18 @@ recipe_pagination_schema = RecipePaginationSchema()
 
 class RecipeListResource(Resource):
     def get(self):
+        sort = request.args.get("sort", "created_at")
+        order = request.args.get("order", "desc")
+        q = request.args.get("q", "")
         per_page = int(request.args.get("per_page", 10))
         page = int(request.args.get("page", 1))
-        paginated_recipes = Recipe.get_all_published(page, per_page)
+
+        if sort not in ["created_at", "cook_time", "num_of_servings"]:
+            sort = "created_at"
+        if order not in ["asc", "desc"]:
+            order = "desc"
+
+        paginated_recipes = Recipe.get_all_published(q, page, per_page, order, sort)
         return recipe_pagination_schema.dump(paginated_recipes), HTTPStatus.OK
 
     @jwt_required

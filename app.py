@@ -9,6 +9,7 @@ from resources.user import (
     MeResource,
     UserActivateResource,
     UserAvatarUploadResource,
+    UserRecipeListResource,
 )
 from resources.recipe import (
     RecipeListResource,
@@ -73,6 +74,7 @@ def register_resources(app):
     api.add_resource(UserActivateResource, "/users/activate/<string:token>")
     api.add_resource(UserAvatarUploadResource, "/users/avatar")
     api.add_resource(RecipeCoverUploadResource, "/recipes/<int:recipe_id>/cover")
+    api.add_resource(UserRecipeListResource, "/<string:username>/recipes")
 
 
 if __name__ == "__main__":

@@ -3,19 +3,19 @@ from flask import request, url_for, render_template
 from flask_restful import Resource
 from http import HTTPStatus
 from models.user import User
+from models.recipe import Recipe
 from utils import hash_password
 from flask_jwt_extended import jwt_optional, get_jwt_identity, jwt_required
 from schemas.user import UserSchema
 from utils import generate_token, verify_token, allowed_file, save_image
 from extensions import mail
 from mail import send_email
-
+from schemas.recipe import RecipeSchema, RecipePaginationSchema
 
 user_schema = UserSchema()
-
 user_public_schema = UserSchema(exclude=("email",))
-
 user_avatar_schema = UserSchema(only=("avatar_image",))
+recipe_pagination_schema = RecipePaginationSchema()
 
 
 class UserListResource(Resource):
@@ -106,3 +106,24 @@ class UserAvatarUploadResource(Resource):
         user.avatar_image = filename
         user.save()
         return user_avatar_schema.dump(user), HTTPStatus.OK
+
+
+class UserRecipeListResource(Resource):
+    @jwt_optional
+    def get(self, username):
+        page = int(request.args.get("page", 1))
+        per_page = int(request.args.get("per_page", 10))
+        visibility = request.args.get("visibility", "public")
+        user = User.get_by_username(username=username)
+        if user is None:
+            return {"message": "user not found"}, HTTPStatus.NOT_FOUND
+        current_user = get_jwt_identity()
+        if current_user == user.id and visibility in ["all", "private"]:
+            pass
+        else:
+            visibility = "public"
+        paginated_recipes = Recipe.get_all_by_user(
+            user_id=user.id, page=page, per_page=per_page, visibility=visibility
+        )
+        return recipe_pagination_schema.dump(paginated_recipes), HTTPStatus.OK
+
