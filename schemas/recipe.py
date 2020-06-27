@@ -22,6 +22,7 @@ class RecipeSchema(Schema):
         UserSchema, attribute="user", dump_only=True, only=["id", "username"]
     )
     cover_url = fields.Method(serialize="dump_cover_url")
+    ingredients = fields.String(validate=[validate.Length(max=1000)])
 
     @validates("num_of_servings")
     def validate_num_of_servings(self, n):
